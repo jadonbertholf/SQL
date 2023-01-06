@@ -1,0 +1,34 @@
+--Create a clothing store playlist
+
+CREATE TABLE clothes (id INTEGER PRIMARY KEY, clothing_piece TEXT, price INTEGER, increased_demand TEXT, quantity INTEGER);
+
+INSERT INTO clothes VALUES
+(1, "shirts", 5.99, "yes", 79),
+(2, "pants", 7.99, "no", 74),
+(3, "underwear", 3.39, "no", 63),
+(4, "socks", 2.99, "yes", 49),
+(5, "shoes", 11.59, "no", 37),
+(6, "hats", 4.99, "yes", 14),
+(7, "sweats", 6.79, "no", 44),
+(8, "coats", 9.99, "no", 25),
+(9, "hoodies", 6.79, "no", 38),
+(10, "gloves", 4.99, "yes", 19),
+(11, "scarves", 5.69, "yes", 3),
+(12, "skirts", 5.47, "yes", 43),
+(13, "tanktops", 4.49, "no", 22),
+(14, "glasses", 4.49, "yes", 36),
+(15, "hair ties", 3.19, "yes", 41);
+
+--display the database ordered by price
+SELECT * FROM clothes;
+SELECT * FROM clothes
+ORDER BY price desc;
+
+--what are the 5 most commonly bought items?
+SELECT clothing_piece, price, quantity
+FROM clothes ORDER BY quantity desc
+LIMIT 5;
+
+--what the 5 least profitable items in the store?
+SELECT clothing_piece, price*quantity, increased_demand FROM clothes WHERE increased_demand = "no" ORDER BY price*quantity desc
+LIMIT 5;
