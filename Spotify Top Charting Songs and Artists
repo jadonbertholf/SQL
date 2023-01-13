@@ -1,0 +1,79 @@
+--Song and Artist data from Wikipedia
+
+--The Top 20 most listened to singers on Spotify
+CREATE TABLE singers (id INTEGER PRIMARY KEY, rank integer, artist text, mil_monthly_listeners integer);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (1, "The Weeknd", 94.73);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (2, "Ed Sheeran", 82.49);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (3, "Justin Bieber", 81.69);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (4, "Taylor Swift", 81.29);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (5, "Ariana Grande", 77.69);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (6, "Sam Smith", 75.53);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (7, "David Guetta", 71.29);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (8, "Drake", 68.89);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (9, "Rihanna", 68.56);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (10, "Bad Bunny", 67.69);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (11, "Coldplay", 65.84);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (12, "Harry Styles", 65.54);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (13, "Eminem", 64.49);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (14, "Mariah Carey", 63.91);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (15, "Dua Lipa", 61.93);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (16, "Elton John", 60.84);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (17, "Sia", 59);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (18, "SZA", 59.04);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (19, "Lady Gaga", 58.76);
+INSERT INTO singers (rank, artist, mil_monthly_listeners) VALUES (20, "21 Savage", 56.83);
+
+--The Top 20 most listened to songs on Spotify
+CREATE TABLE songs (id INTEGER PRIMARY KEY, rank integer, song text, mil_streams integer, artist text);
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (1, "Blinding Lights", 3.35, "The Weeknd");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (2, "Shape of You", 3.341, "Ed Sheeran");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (3, "Dance Monkey", 2.732, "Tones And I");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (4, "Someone You Loved", 2.606, "Lewis Capaldi");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (5, "Rockstar", 2.581, "21 Savage");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (6, "Sunflower", 2.518, "Post Malone and Swae Lee");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (7, "One Dance", 2.505, "Drake");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (8, "Closer", 2.441, "The Chainsmokers");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (9, "Believer", 2.345, "Imagine Dragons");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (10, "Stay", 2.327, "Justin Bieber");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (11, "Señorita", 2.318, "Shawn Mendes");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (12, "Perfect", 2.287, "Ed Sheeran");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (13, "Heat Waves", 2.223, "Glass Animals");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (14, "Say You Won't Let Go", 2.208, "James Arthur");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (15, "Bad Guy", 2.191, "Billie Eilish");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (16, "Thinking Out Loud", 2.141, "Ed Sheeran");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (17, "Starboy", 2.14, "The Weeknd");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (18, "Lucid Dreams", 2.131, "Juice WRLD");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (19, "Don't Start Now", 2.116, "Dua Lipa");
+INSERT INTO songs (rank, song, mil_streams, artist) VALUES (20, "God's Plan", 2.089, "Drake");
+
+--The most songs in the top 100 on Spotify
+CREATE TABLE artists_most_top100 (id INTEGER PRIMARY KEY, rank integer, artist text, total_songs integer);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (1, "Justin Bieber", 6);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (2, "Post Malone", 5);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (2, "Ed Sheeran", 5);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (3, "Dua Lipa", 4);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (3, "Shawn Mendes", 4);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (4, "The Weeknd", 3);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (4, "The Chainsmokers", 3);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (4, "Imagine Dragons", 3);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (4, "Drake", 3);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (4, "XXXTentacion", 3);
+INSERT INTO artists_most_top100 (rank, artist, total_songs) VALUES (4, "Maroon 5", 3);
+
+--How high do the top artist's songs chart?
+SELECT so.id AS song_rank, top.artist, so.song, si.mil_monthly_listeners
+FROM songs so
+LEFT JOIN singers si
+ON si.artist = so.artist
+LEFT JOIN artists_most_top100 top
+ON top.artist=so.artist
+ORDER BY si.mil_monthly_listeners desc;
+
+--Who wrote the top charting songs and how many streams did they get?
+SELECT so.artist, so.song, so.mil_streams, top.total_songs
+FROM songs so
+LEFT JOIN singers si
+ON si.artist = so.artist
+LEFT JOIN artists_most_top100 top
+ON top.artist=so.artist
+ORDER BY so.mil_streams desc;
