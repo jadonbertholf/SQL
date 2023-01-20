@@ -1,0 +1,172 @@
+#Here is a list of queries written to answer questions about the chinook database aquired from Charlotte Chaze's "Break Into Tech" course.
+
+#1. Show Customers their full names, customer ID, and country who are not in the US. Hint: != or <> can be used to say "is not equal to".
+SELECT CustomerId, FirstName, LastName, Country
+FROM customers
+WHERE country <> "USA"
+
+#2. Show only the Customers from Brazil.
+SELECT *
+FROM customers
+WHERE country = "Brazil"
+
+#3. Find the Invoices of customers who are from Brazil. The resulting table should show the customers full name, Invoice ID, Date of the invoice, and billing country.
+SELECT i.InvoiceId, i.InvoiceDate, i.BillingCountry, c.FirstName, c.LastName
+FROM invoices i
+LEFT JOIN customers c
+WHERE i.BillingCountry = "Brazil"
+
+#4. Show the Employees who are Sales Agents.
+SELECT employeeid, FirstName, LastName, Title
+FROM employees
+WHERE Title = "Sales Support Agent"
+
+#5. Find a unique/distinct list of billing countries from the Invoice table.
+SELECT DISTINCT BillingCountry
+FROM invoices
+
+#6. Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agents full name.
+SELECT i.InvoiceId, i.InvoiceDate, i.BillingCountry, e.FirstName, e.LastName
+FROM invoices i
+LEFT JOIN employees e
+WHERE e.Title = "Sales Support Agent"
+
+#7. Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
+SELECT i.InvoiceId, c.Country, c.FirstName, c.LastName, e.FirstName, e.LastName, sum(i.invoiceid) OVER (PARTITION BY i.invoiceId) as employee_invoice_total
+FROM invoices as i
+INNER JOIN employees as e
+ON i.invoiceId = e.employeeId
+INNER JOIN customers as c
+ON i.invoiceId = c.supportrepid
+WHERE e.Title = "Sales Support Agent"
+
+#8. How many Invoices were there in 2009?
+SELECT sum(InvoiceDate)
+FROM invoices
+WHERE InvoiceDate LIKE "2009%"
+
+#9. What are the total sales for 2009?
+SELECT sum(unitprice) AS "2009_Sales"
+FROM Invoice_items
+LEFT JOIN invoices
+WHERE InvoiceDate LIKE "2009%"
+
+#10. Write a query that includes the purchased track name with each invoice line ID.
+SELECT t.name, i.invoiceid
+FROM invoice_items i
+LEFT JOIN tracks t
+ON i.trackid = t.trackid
+
+#11. Write a query that includes the purchased track name AND artist name with each invoice line ID.
+SELECT t.name, a.name, i.invoiceid
+FROM invoice_items i
+INNER JOIN tracks t
+ON i.trackid = t.trackid
+INNER JOIN albums m
+ON t.Albumid = m.Albumid
+INNER JOIN artists a
+ON m.artistid = a.artistid
+
+#12. Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+SELECT t.Name, t.MediaTypeid, t.GenreId, a.title as "album_name"
+FROM tracks t
+LEFT JOIN albums a
+ON t.Albumid = a.albumid
+
+#13. Show the total sales made by each sales agent.
+SELECT sum(i.Unitprice*i.Quantity) AS Sales, e.FirstName, e.LastName
+FROM invoice_items i
+LEFT JOIN invoices inv
+ON i.invoiceid = inv.invoiceid
+JOIN customers c
+ON inv.customerid = c.customerid
+JOIN employees e
+ON c.SupportRepid = e.Employeeid
+GROUP By e.FirstName
+
+#14. Which sales agent made the most dollars in sales in 2009?
+SELECT sum(i.Unitprice*i.Quantity) AS Sales, e.FirstName, e.LastNamea
+WHERE inv.InvoiceDate LIKE "2009%"
+GROUP By e.FirstName
+ORDER BY Sales
+
+#15. Which artist made the most money?
+WITH temptable as (
+    SELECT a.name top, sum(i.UnitPrice*i.Quantity) OVER (PARTITION BY a.name) as earnings
+    FROM artists a
+    INNER JOIN albums al
+    ON a.artistid = al.artistid
+    JOIN tracks t
+    ON al.albumid = t.albumid
+    JOIN invoice_items i
+    ON t.trackid = i.trackid
+    ORDER BY a.name
+    )
+SELECT top, SUM(earnings)
+FROM temptable
+GROUP BY top
+ORDER BY SUM(earnings) desc
+LIMIT 1
+
+#16. Which media type gives back the most money?
+WITH media_temptable as (
+    SELECT sum(i.UnitPrice*i.Quantity) OVER (PARTITION BY m.name) as per_track_sales, m.name as Media
+    FROM media_types m
+    INNER JOIN tracks t
+    ON m.mediatypeid = t.mediatypeid
+    JOIN invoice_items i
+    ON t.trackid = i.trackid
+    )
+SELECT Media, sum(per_track_sales) as top_media_sales
+FROM media_temptable
+GROUP BY Media
+ORDER BY SUM(per_track_sales) desc
+LIMIT 1
+
+#17. What are the 10 highest selling genres?
+WITH genre_temptable as (
+    SELECT g.name as top_genre, sum(inv.UnitPrice*Quantity) OVER (PARTITION BY g.name) as genre_sales
+    FROM genres g
+    JOIN tracks t
+    ON g.Genreid = t.genreid
+    JOIN invoice_items inv
+    ON t.trackid = inv.trackid
+    )
+SELECT top_genre, sum(genre_sales) as top_genre_sales
+FROM genre_temptable
+GROUP BY top_genre
+ORDER BY top_genre_sales desc
+LIMIT 10
+
+#18. What are the top 10 highest earning billing cities?
+WITH highest_city_temptable as (
+    SELECT SUM(inv.UnitPrice*inv.Quantity) OVER (PARTITION BY i.BillingCity) AS billing_city_sales, i.BillingCity as top_city
+    FROM invoices i
+    JOIN invoice_items inv
+    ON i.invoiceid = inv.invoiceid
+    )
+SELECT top_city, sum(billing_city_sales) as top_billing_sales
+FROM highest_city_temptable
+GROUP BY top_city
+ORDER BY top_billing_sales desc
+LIMIT 10
+
+#19. Whos in charge?
+SELECT employeeid, FirstName, LastName, Title
+FROM employees
+WHERE Title = "General Manager"
+
+#20. What is the most common country we sell to by volume?
+WITH country_temptable as(
+    SELECT c.country as countryname, sum(inv.quantity) OVER (PARTITION BY c.country) AS country_qty
+    FROM customers c
+    JOIN invoices i
+    ON c.customerid = i.customerid
+    JOIN invoice_items inv
+    ON i.invoiceid = inv.invoiceid
+    )
+SELECT sum(country_qty) AS top_country, countryname
+FROM country_temptable
+GROUP BY countryname
+ORDER BY top_country desc
+LIMIT 1
